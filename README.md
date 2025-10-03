@@ -9,6 +9,10 @@ This project answers the question: **"What minimal pixel changes would flip an i
 ### Example:
 **For a real cat image classified as "cat," show exactly which pixels need to change to make the model predict "dog"**
 
+![Counterfactual Example](assets/counterfactual_example.png)
+
+*Visual example showing: Original Image (Cat) → Counterfactual (Dog) → Perturbation Heatmap*
+
 ## Features
 
 - **CNN Image Classifier**: Deep learning model for cats vs dogs binary classification
@@ -173,10 +177,6 @@ For each iteration:
 - Counterfactual visualization tools
 - Quality metrics computation
 - Side-by-side comparisons
-
-## License
-
-This project is for educational and research purposes.
 
 ---
 
