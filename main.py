@@ -12,7 +12,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.utils.data_loader import DataLoader
 from src.models.cnn_classifier import CNNClassifier
 from src.counterfactuals.gradient_based import GradientBasedCounterfactuals
+from src.utils.visualization import CounterfactualVisualizer
 import numpy as np
+
+
+def convert_result_for_viz(result):
+    """Convert gradient-based result format to visualization format."""
+    viz_result = result.copy()
+    
+    # Add expected keys for visualization
+    viz_result['original_prediction'] = np.array([1 - result['original_pred'], result['original_pred']])
+    viz_result['counterfactual_class'] = result['cf_class']
+    viz_result['counterfactual_prediction'] = np.array([1 - result['cf_pred'], result['cf_pred']])
+    viz_result['l2_distance'] = result['proximity']
+    
+    return viz_result
 
 
 def main():
@@ -87,7 +101,7 @@ def main():
         verbose=True
     )
     
-    # 4. Evaluate Results
+    # 4. Evaluate and Visualize Results
     print("\n[4/4] Evaluation Results:")
     print("=" * 60)
     print(f"Success: {result['success']}")
@@ -98,29 +112,84 @@ def main():
     print(f"Iterations: {result['iterations']}")
     print("=" * 60)
     
-    # Batch evaluation
+    # Create visualizations
+    print("\nGenerating visualizations...")
+    os.makedirs('results', exist_ok=True)
+    
+    visualizer = CounterfactualVisualizer()
+    
+    # Convert result format for visualization
+    viz_result = convert_result_for_viz(result)
+    
+    # Plot single counterfactual with 3-panel view
+    fig = visualizer.plot_image_counterfactual(
+        viz_result,
+        class_names=['Cat', 'Dog'],
+        save_path='results/counterfactual_example.png'
+    )
+    print(f"   [SUCCESS] Saved: results/counterfactual_example.png")
+    print(f"      (Shows: Original -> Counterfactual -> Perturbation heatmap)")
+    
+    # Batch evaluation with multiple examples
     print("\nGenerating batch evaluation...")
     test_images = images[100:105]  # 5 test images
-    results = []
+    batch_results = []
     
     for i, img in enumerate(test_images):
         pred_class = classifier.predict_class(np.expand_dims(img, 0))[0]
         target = 1 - pred_class  # Flip class
         
-        result = cf_generator.generate_counterfactual(
+        cf_result = cf_generator.generate_counterfactual(
             img,
             target_class=target,
             max_iterations=300,
             verbose=False
         )
-        results.append(result)
+        batch_results.append(cf_result)
     
     # Evaluate batch
-    evaluation = cf_generator.evaluate_counterfactuals(results, verbose=True)
+    evaluation = cf_generator.evaluate_counterfactuals(batch_results, verbose=True)
     
-    print("\nCounterfactual generation complete!")
-    print("\n[TIP] Use visualization tools in src/utils/visualization.py")
-    print("   to create visual comparisons of counterfactuals.")
+    # Visualize batch comparison
+    if len(batch_results) > 0:
+        # Convert all results for visualization
+        viz_batch = [convert_result_for_viz(r) for r in batch_results]
+        
+        # Create individual visualizations for each result
+        import matplotlib.pyplot as plt
+        fig, axes = plt.subplots(len(viz_batch), 3, figsize=(15, 5*len(viz_batch)))
+        
+        for i, result in enumerate(viz_batch):
+            ax_row = axes[i] if len(viz_batch) > 1 else axes
+            
+            # Original
+            ax_row[0].imshow(result['original_image'])
+            ax_row[0].set_title(f'Original: {"Cat" if result["original_class"] == 0 else "Dog"}')
+            ax_row[0].axis('off')
+            
+            # Counterfactual
+            ax_row[1].imshow(result['counterfactual'])
+            ax_row[1].set_title(f'CF: {"Cat" if result["counterfactual_class"] == 0 else "Dog"}')
+            ax_row[1].axis('off')
+            
+            # Perturbation
+            pert = np.abs(result['perturbation'])
+            pert = (pert - pert.min()) / (pert.max() - pert.min() + 1e-8)
+            ax_row[2].imshow(pert, cmap='hot')
+            ax_row[2].set_title(f'L2: {result["l2_distance"]:.2f}')
+            ax_row[2].axis('off')
+        
+        plt.tight_layout()
+        plt.savefig('results/counterfactual_batch.png', dpi=150, bbox_inches='tight')
+        plt.close()
+        print(f"\n   [SUCCESS] Saved: results/counterfactual_batch.png")
+        print(f"      (Shows: {len(viz_batch)} counterfactual examples in a grid)")
+    
+    print("\n" + "=" * 60)
+    print("COMPLETE! Check the 'results/' folder for visualizations:")
+    print("   1. counterfactual_example.png - Single example with heatmap")
+    print("   2. counterfactual_batch.png - Multiple examples comparison")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
