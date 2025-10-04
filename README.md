@@ -47,7 +47,6 @@ Counterfactual/
 └── README.md                        # This file
 ```
 
-   │   └── ...
 ## How to use
 
 Follow these steps to run the project end-to-end on your machine. These commands assume you are using a Python virtual environment and are running from the project root (`Counterfactual/`).
@@ -81,22 +80,7 @@ data/kaggle_cats_dogs/
     └── ...
 ```
 
-4) (Optional) If you use Kaggle CLI to download the dataset, you can run:
-
-```powershell
-4. **Optimize with dual objectives**:
-   - Proximity loss: Keep changes minimal (L2 distance)
-   - Sparsity loss: Change as few pixels as possible (L1 distance)
-5. **Generate counterfactual** showing exactly what changed
-
-```
-
 5) Train the model (short demo) or load an existing model
-
-```powershell
-### Algorithm
-```
-For each iteration:
 
 Notes:
 - `main.py` runs a short demo by default (trains on a reduced subset for speed). Edit `main.py` to change training epochs, batch size, or which images are used for demonstration.
@@ -108,13 +92,6 @@ After `main.py` finishes, example visualizations are saved in `results/`:
 
 - `results/counterfactual_example.png` — single example (Original → CF → Heatmap)
 - `results/counterfactual_batch.png` — multiple examples in a grid
-
-Open the folder in File Explorer or use the terminal:
-
-```powershell
-  1. Compute model prediction gradient
-  2. Update perturbation to move toward target class
-  3. Apply proximity and sparsity constraints
 
 7) Tips and customization
 
