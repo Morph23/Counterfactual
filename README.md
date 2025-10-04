@@ -64,77 +64,81 @@ pip install -r requirements.txt
    │   ├── 1.jpg
    │   ├── 2.jpg
    │   └── ...
-   └── Dog/
-       ├── 1.jpg
-       ├── 2.jpg
-       └── ...
-   ```
+## How to use
 
-## Quick Start
+Follow these steps to run the project end-to-end on your machine. These commands assume you are using a Python virtual environment and are running from the project root (`Counterfactual/`).
 
-```python
-from src.utils.data_loader import DataLoader
-from src.models.cnn_classifier import CNNClassifier
-from src.counterfactuals.gradient_based import GradientBasedCounterfactuals
+1) Create and activate a virtual environment (optional but recommended)
 
-# Load real Kaggle cats vs dogs dataset
-loader = DataLoader()
-images, labels = loader.load_kaggle_cats_dogs(
-    data_path='data/kaggle_cats_dogs',
-    max_samples_per_class=500
-)
-
-# Train CNN on real images
-classifier = CNNClassifier(input_shape=(64, 64, 3))
-model = classifier.build_model()
-classifier.train(images, labels, epochs=20)
-
-# Generate counterfactuals on real cat/dog photos
-cf_generator = GradientBasedCounterfactuals(model)
-result = cf_generator.generate_counterfactual(
-    images[0],
-    target_class=1,  # Flip to opposite class
-    max_iterations=1000
-)
-
-# Visualize the counterfactual
-from src.utils.visualization import CounterfactualVisualizer
-viz = CounterfactualVisualizer()
-viz.plot_counterfactual_comparison(
-    images[0], 
-    result['counterfactual'],
-    result['original_pred'],
-    result['cf_pred']
-)
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-## Dataset Requirements
+2) Install Python dependencies
 
-**Important**: This project requires real images. No synthetic fallback is provided.
+```powershell
+pip install -r requirements.txt
+```
 
-### Kaggle Cats vs Dogs Dataset
-- **Source**: https://www.kaggle.com/datasets/bhavikjikadara/dog-and-cat-classification-dataset
-- **Size**: ~800MB (thousands of cat and dog images)
-- **Format**: JPG images in `Cat/` and `Dog/` folders
-- **Required**: The application will raise an error if the dataset is not found
+3) Download and prepare the dataset
 
-## How It Works
+1. Go to: https://www.kaggle.com/datasets/bhavikjikadara/dog-and-cat-classification-dataset
+2. Download and extract the dataset.
+3. Ensure the folder structure matches:
 
-### Gradient-Based Counterfactual Generation
-1. **Start with original image** (e.g., classified as "dog")
-2. **Define target class** (e.g., "cat")
-3. **Use model gradients** to find minimal pixel changes
+```
+data/kaggle_cats_dogs/
+├── Cat/
+│   ├── 1.jpg
+│   └── ...
+└── Dog/
+    ├── 1.jpg
+    └── ...
+```
+
+4) (Optional) If you use Kaggle CLI to download the dataset, you can run:
+
+```powershell
 4. **Optimize with dual objectives**:
    - Proximity loss: Keep changes minimal (L2 distance)
    - Sparsity loss: Change as few pixels as possible (L1 distance)
 5. **Generate counterfactual** showing exactly what changed
 
+```
+
+5) Train the model (short demo) or load an existing model
+
+```powershell
 ### Algorithm
 ```
 For each iteration:
+
+Notes:
+- `main.py` runs a short demo by default (trains on a reduced subset for speed). Edit `main.py` to change training epochs, batch size, or which images are used for demonstration.
+- Training on a full dataset or running longer experiments requires more time and memory; consider running on a GPU-enabled machine.
+
+6) View generated visualizations
+
+After `main.py` finishes, example visualizations are saved in `results/`:
+
+- `results/counterfactual_example.png` — single example (Original → CF → Heatmap)
+- `results/counterfactual_batch.png` — multiple examples in a grid
+
+Open the folder in File Explorer or use the terminal:
+
+```powershell
   1. Compute model prediction gradient
   2. Update perturbation to move toward target class
   3. Apply proximity and sparsity constraints
+
+7) Tips and customization
+
+- To increase counterfactual quality, adjust `GradientBasedCounterfactuals` parameters (e.g., `max_iterations`, loss weights) in `src/counterfactuals/gradient_based.py` or via the `main.py` call.
+- To run on more images, change the `test_images` slice in `main.py`.
+- To save additional outputs, extend `src/utils/visualization.py` and call the desired plotting function in `main.py`.
+
+If you'd like, I can add command aliases or a small wrapper script to automate dataset setup and demo runs.
   4. Check if target class is achieved
   5. Return counterfactual when successful
 ```
