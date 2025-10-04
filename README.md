@@ -47,22 +47,6 @@ Counterfactual/
 └── README.md                        # This file
 ```
 
-## Installation
-
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Download Dataset
-1. Go to [Kaggle Cats vs Dogs Dataset](https://www.kaggle.com/datasets/bhavikjikadara/dog-and-cat-classification-dataset)
-2. Download and extract the dataset
-3. Place folders in `data/kaggle_cats_dogs/`:
-   ```
-   data/kaggle_cats_dogs/
-   ├── Cat/
-   │   ├── 1.jpg
-   │   ├── 2.jpg
    │   └── ...
 ## How to use
 
@@ -138,9 +122,6 @@ Open the folder in File Explorer or use the terminal:
 - To run on more images, change the `test_images` slice in `main.py`.
 - To save additional outputs, extend `src/utils/visualization.py` and call the desired plotting function in `main.py`.
 
-If you'd like, I can add command aliases or a small wrapper script to automate dataset setup and demo runs.
-  4. Check if target class is achieved
-  5. Return counterfactual when successful
 ```
 
 ## Evaluation Metrics
@@ -157,30 +138,6 @@ If you'd like, I can add command aliases or a small wrapper script to automate d
 - **Debugging**: Understand model decision boundaries
 - **Trust**: Verify that models make sensible distinctions between cats and dogs
 - **Education**: Visual learning about deep learning internals
-
-## Core Components
-
-### 1. CNNClassifier (`src/models/cnn_classifier.py`)
-- Binary image classifier for cats vs dogs
-- Multi-layer CNN architecture with batch normalization
-- Dropout for regularization
-- Model save/load functionality
-
-### 2. GradientBasedCounterfactuals (`src/counterfactuals/gradient_based.py`)
-- Gradient-based optimization for counterfactual generation
-- Proximity and sparsity loss functions
-- Batch processing support
-- Comprehensive evaluation metrics
-
-### 3. DataLoader (`src/utils/data_loader.py`)
-- Loads real Kaggle cats vs dogs dataset
-- Image preprocessing and normalization
-- Dataset shuffling and validation
-
-### 4. Visualization & Metrics (`src/utils/`)
-- Counterfactual visualization tools
-- Quality metrics computation
-- Side-by-side comparisons
 
 ---
 
